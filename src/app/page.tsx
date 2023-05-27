@@ -22,7 +22,7 @@ export default function Home() {
           <div className="absolute text-2xl text-blue-300 top-5 left-5 px-10 sm:pl-96 sm:pr-40">
             <div className="text-center">
                 <p className="mt-6 text-lg leading-8 text-gray-600">
-                Merci d'avoir partagé cette journee exceptionnelle et merci d'avoir capture les moments inoubliable vous pouvez admirer les oeuvres et mettre les votre.
+                Merci d&apos;avoir partagé cette journee exceptionnelle et merci d&apos;avoir capture les moments inoubliable vous pouvez admirer les oeuvres et mettre les votre.
                 </p>
                 <p className="mt-6 text-lg leading-8 text-gray-500 text-right">
                   Noemie & William MARECHAL
