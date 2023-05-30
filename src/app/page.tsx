@@ -1,6 +1,24 @@
+"use client"
+
 import { ArrowLongLeftIcon, ArrowLongRightIcon } from '@heroicons/react/20/solid'
+import { useS3Upload } from "next-s3-upload";
 
 export default function Home() {
+  const {
+    files,
+    openFileDialog,
+    uploadToS3,
+  } = useS3Upload()
+
+  console.log(files)
+
+  async function handleFileChange(files: File[]) {
+    for(const file of files) {
+      await uploadToS3(file);
+    }
+  }
+
+
   const images = [
     {
       url: 'https://picsum.photos/seed/1/200/300',
@@ -75,8 +93,18 @@ export default function Home() {
           </div>
         </div>
 
-        <button title="Ajouter vos photos"
-        className="fixed z-90 bottom-14 right-2 bg-blue-600 py-2 px-1 text-lg rounded-full drop-shadow-lg justify-center items-center text-white hover:bg-blue-700 hover:drop-shadow-2xl">Ajouter vos photos</button>
+        <label
+          title="Ajouter vos photos"
+          className="cursor-pointer fixed z-90 bottom-14 right-2 bg-blue-600 py-2 px-1 text-lg rounded-full drop-shadow-lg justify-center items-center text-white hover:bg-blue-700 hover:drop-shadow-2xl"
+        >
+          <input
+            type="file"
+            multiple
+            className="hidden"
+            onChange={event => handleFileChange(Array.from(event.target.files!))}
+          />
+          Ajouter vos photos
+        </label>
       </main>
     </div>
   )
