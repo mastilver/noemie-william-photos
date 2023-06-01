@@ -2,6 +2,15 @@
 
 import { ArrowLongLeftIcon, ArrowLongRightIcon, ArrowDownIcon } from '@heroicons/react/20/solid'
 import { useS3Upload } from "next-s3-upload";
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+  QueryClient,
+  QueryClientProvider,
+} from '@tanstack/react-query'
+import { useEffect, useState } from 'react'
+import ky from 'ky'
 
 export default function Home() {
   const {
@@ -9,6 +18,10 @@ export default function Home() {
     openFileDialog,
     uploadToS3,
   } = useS3Upload()
+
+  const {
+    contents,
+  } = usePages()
 
   async function handleFileChange(files: File[]) {
     for(const file of files) {
@@ -23,42 +36,6 @@ export default function Home() {
   
     link.click();
   }
-
-
-  const images = [
-    {
-      url: 'https://telemediabroadcasting.com/wp-content/uploads/2016/03/WhiteBackground.jpg',
-      author: 'Thomas',
-    },
-    {
-      url: 'https://upload.wikimedia.org/wikipedia/commons/5/50/Black_colour.jpg',
-      author: 'Thomas',
-    },
-    {
-      url: 'https://picsum.photos/seed/1/300/200',
-      author: 'Thomas',
-    },
-    {
-      url: 'https://picsum.photos/seed/2/300/200',
-      author: 'Thomas',
-    },
-    {
-      url: 'https://picsum.photos/seed/1/300/200',
-      author: 'Thomas',
-    },
-    {
-      url: 'https://picsum.photos/seed/2/200/300',
-      author: 'Thomas',
-    },
-    {
-      url: 'https://picsum.photos/seed/1/200/300',
-      author: 'Thomas',
-    },
-    {
-      url: 'https://picsum.photos/seed/2/300/200',
-      author: 'Thomas',
-    }
-  ]
 
   return (
     <div className="bg-white">
@@ -81,16 +58,16 @@ export default function Home() {
 
         <div className="container mx-auto py-0 sm:py-1">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 px-1 lg:px-8">
-            {images.map((image) => (
-              <div className="md:col-span-1">
+            {contents.map((content) => (
+              <div className="md:col-span-1" key={content.url}>
                 <div className="relative">
-                  <img src={image.url} className="w-full h-auto"/>
+                  <img src={content.url} className="w-full h-auto"/>
                   <span className="absolute bottom-0 right-0 bg-white text-black p-2 text-sm font-semibold rounded-tl-md">
                     <p className='inline-block'>par Thomas</p>
                     <ArrowDownIcon
                       className="inline-block h-5 w-5 text-black cursor-pointer"
                       title='Télécharger'
-                      onClick={() => downloadFile(image.url)}
+                      onClick={() => downloadFile(content.url)}
                     />
                   </span>
                 </div>
@@ -121,7 +98,7 @@ export default function Home() {
         </nav>
 
         <label
-          title="Ajouter vos photos"
+          title="Ajoutez vos photos/videos"
           className="cursor-pointer fixed z-90 bottom-14 right-2 bg-blue-600 py-2 px-1 text-lg rounded-full drop-shadow-lg justify-center items-center text-white hover:bg-blue-700 hover:drop-shadow-2xl"
         >
           <input
@@ -130,9 +107,74 @@ export default function Home() {
             className="hidden"
             onChange={event => handleFileChange(Array.from(event.target.files!))}
           />
-          Ajouter vos photos
+          Ajoutez vos photos/vidoes
         </label>
       </main>
     </div>
   )
+}
+
+type Content = {
+  url: string,
+  author: string,
+  type: 'image' | 'video',
+}
+
+type Page = {
+  nextContinuationToken: string | null,
+  contents: Content[]
+}
+
+function usePages(): {
+  contents: Content[],
+  currentPage: number,
+  reset(): Promise<void>,
+  previousPageDisabled: boolean,
+  goToPreviousPage(): Promise<void>,
+  nextPageDisabled: boolean,
+  goToNextPage(): Promise<void>,
+} {
+  const [currentPage, setCurrentPage] = useState(0)
+
+  const [pages, setPages] = useState<Page[]>([])
+
+  useEffect(() => {
+    queryMoreFiles()
+  }, [])
+
+  async function queryMoreFiles() {
+    const currentArrayLength = pages.length
+
+    const data = await ky.get(`/api/contents?nextContinuationToken=${pages[currentArrayLength - 1]?.nextContinuationToken}`).json<Page>()
+
+    setPages(arr => {
+      // NOTE: use previously queried length to prevent race conditions
+      arr[currentArrayLength] = data
+      return arr
+    })
+  }
+
+  async function goToPreviousPage() {
+
+  }
+
+  async function goToNextPage() {
+
+  }
+
+  async function reset() {
+    setCurrentPage(0)
+    setPages([])
+    await queryMoreFiles()
+  }
+
+  return {
+    contents: pages[currentPage]?.contents ?? [],
+    reset,
+    currentPage,
+    previousPageDisabled: currentPage === 0,
+    goToPreviousPage,
+    nextPageDisabled: pages[currentPage]?.nextContinuationToken != null,
+    goToNextPage,
+  }
 }
