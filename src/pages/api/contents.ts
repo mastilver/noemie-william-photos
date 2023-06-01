@@ -1,5 +1,6 @@
 import { GetObjectCommand, S3, S3Client } from '@aws-sdk/client-s3'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
+import { NextApiRequest, NextApiResponse } from 'next'
 
 type Content = {
   url: string,
@@ -20,14 +21,20 @@ const s3 = new S3({
   region: process.env.S3_REGION,
 })
 
-export default async function handler(req: any, res: any) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse<Page>) {
+  const continuationToken = req.query.nextContinuationToken
+  if (typeof continuationToken !== 'string') {
+    throw new Error('nextContinuationToken not a string')
+  }
+
   const objects = await s3.listObjectsV2({
     Bucket: process.env.S3_BUCKET,
     MaxKeys: 20,
+    ContinuationToken: continuationToken ? decodeURIComponent(continuationToken) : undefined,
   })
 
   const page: Page =  {
-    nextContinuationToken: objects.IsTruncated ? '' : null,
+    nextContinuationToken: objects.IsTruncated ? encodeURIComponent(objects.NextContinuationToken!) : null,
     contents: await Promise.all((objects.Contents ?? []).map(async c => {
       const url = await getSignedUrl(s3, new GetObjectCommand({
         Bucket: process.env.S3_BUCKET,

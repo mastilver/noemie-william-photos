@@ -21,6 +21,10 @@ export default function Home() {
 
   const {
     contents,
+    previousPageDisabled,
+    goToPreviousPage,
+    nextPageDisabled,
+    goToNextPage,
   } = usePages()
 
   async function handleFileChange(files: File[]) {
@@ -79,8 +83,8 @@ export default function Home() {
         <nav className="flex items-center justify-between border-t border-gray-200 px-4 sm:px-0">
           <div className="-mt-px flex w-0 flex-1 py-3">
             <a
-              href="#"
-              className="inline-flex items-center border-t-2 border-transparent pr-1 pt-4 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700"
+              onClick={goToPreviousPage}
+              className="cursor-pointer inline-flex items-center border-t-2 border-transparent pr-1 pt-4 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700"
             >
               <ArrowLongLeftIcon className="mr-3 h-5 w-5 text-gray-400" aria-hidden="true" />
               Précédent
@@ -88,8 +92,8 @@ export default function Home() {
           </div>
           <div className="-mt-px flex w-0 flex-1 justify-end">
             <a
-              href="#"
-              className="inline-flex items-center border-t-2 border-transparent pl-1 pt-4 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700"
+              onClick={goToNextPage}
+              className="cursor-pointer inline-flex items-center border-t-2 border-transparent pl-1 pt-4 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700"
             >
               Suivant
               <ArrowLongRightIcon className="ml-3 h-5 w-5 text-gray-400" aria-hidden="true" />
@@ -144,22 +148,36 @@ function usePages(): {
 
   async function queryMoreFiles() {
     const currentArrayLength = pages.length
+    const nextContinuationToken = pages[currentArrayLength - 1]?.nextContinuationToken ?? '';
 
-    const data = await ky.get(`/api/contents?nextContinuationToken=${pages[currentArrayLength - 1]?.nextContinuationToken}`).json<Page>()
+    // If end of data or data already there
+    if (currentArrayLength !== 0 && (pages[currentArrayLength] || !nextContinuationToken)) {
+      return
+    }
+
+    const data = await ky.get(`/api/contents?nextContinuationToken=${nextContinuationToken}`).json<Page>()
 
     setPages(arr => {
       // NOTE: use previously queried length to prevent race conditions
       arr[currentArrayLength] = data
-      return arr
+      return Array.from(arr)
     })
   }
 
   async function goToPreviousPage() {
-
+    if (currentPage !== 0) {
+      setCurrentPage(currentPage - 1)
+    }
   }
 
   async function goToNextPage() {
+    const page = pages[currentPage]
 
+    if (page?.nextContinuationToken) {
+      setCurrentPage(currentPage + 1)
+    }
+
+    queryMoreFiles()
   }
 
   async function reset() {
