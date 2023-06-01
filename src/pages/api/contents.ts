@@ -45,11 +45,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
 
       return {
         url: url,
-        author: 'thomas',
+        author: getAuthor(c.Key!),
         type: 'image',
       }
     })),
   }
 
   res.status(200).json(page);
+}
+
+function getAuthor(url: string): string {
+  const [,author] = url.split('/')
+
+  return author
 }
