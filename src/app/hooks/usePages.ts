@@ -26,26 +26,28 @@ export default function usePages(): {
     const [pages, setPages] = useState<Page[]>([])
 
     useEffect(() => {
-        queryMoreFiles()
-    }, [])
-
-    async function queryMoreFiles() {
-        const currentArrayLength = pages.length
-        const nextContinuationToken = pages[currentArrayLength - 1]?.nextContinuationToken ?? '';
-
-        // If end of data or data already there
-        if (currentArrayLength !== 0 && (pages[currentArrayLength] || !nextContinuationToken)) {
-        return
+        if (currentPage === -1) {
+            return setCurrentPage(0)
         }
 
-        const data = await ky.get(`/api/contents?nextContinuationToken=${nextContinuationToken}`).json<Page>()
-
-        setPages(arr => {
-        // NOTE: use previously queried length to prevent race conditions
-        arr[currentArrayLength] = data
-        return Array.from(arr)
-        })
-    }
+        (async () => {
+            const currentArrayLength = pages.length
+            const nextContinuationToken = pages[currentArrayLength - 1]?.nextContinuationToken ?? '';
+    
+            // If end of data or data already there
+            if (currentArrayLength !== 0 && (pages[currentArrayLength] || !nextContinuationToken)) {
+                return
+            }
+    
+            const data = await ky.get(`/api/contents?nextContinuationToken=${nextContinuationToken}`).json<Page>()
+    
+            setPages(arr => {
+                // NOTE: use previously queried length to prevent race conditions
+                arr[currentArrayLength] = data
+                return Array.from(arr)
+            })
+        })()
+    }, [currentPage])
 
     async function goToPreviousPage() {
         if (currentPage !== 0) {
@@ -57,16 +59,14 @@ export default function usePages(): {
         const page = pages[currentPage]
 
         if (page?.nextContinuationToken) {
-        setCurrentPage(currentPage + 1)
+            setCurrentPage(currentPage + 1)
         }
-
-        queryMoreFiles()
     }
 
     async function reset() {
-        setCurrentPage(0)
+        // trigger refetch
+        setCurrentPage(-1)
         setPages([])
-        await queryMoreFiles()
     }
 
     return {

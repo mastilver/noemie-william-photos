@@ -6,7 +6,7 @@ import humanFormat from 'human-format'
 
 import usePages from './hooks/usePages';
 import useAuth from './hooks/useAuth';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 export default function Home() {
   const {
@@ -106,6 +106,7 @@ function MainPage() {
     goToPreviousPage,
     nextPageDisabled,
     goToNextPage,
+    reset,
   } = usePages()
 
   return (
@@ -169,13 +170,17 @@ function MainPage() {
           </div>
         </nav>
         
-        <UploadButton />
+        <UploadButton onComplete={reset} />
       </main>
     </div>
   )
 }
 
-function UploadButton() {
+function UploadButton({
+  onComplete
+}: {
+  onComplete(): any,
+}) {
   const {
     files,
     uploadToS3,
@@ -190,8 +195,11 @@ function UploadButton() {
 
   const isUploading = numFiles !== 0 && numFiles !== uploadedNumFiles
 
-  console.log(`files: ${uploadedNumFiles}/${numFiles}`)
-  console.log(`size: ${humanFormat(uploadedSizeFiles)}/${humanFormat(sizeFiles)}`)
+  useEffect(() => {
+    if (!isUploading && numFiles !== 0) {
+      onComplete()
+    }
+  }, [isUploading])
 
   async function handleFileChange(files: File[]) {
     resetFiles()
