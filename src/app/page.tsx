@@ -100,32 +100,12 @@ function LogInPage({
 
 function MainPage() {
   const {
-    files: uploadingFiles,
-    openFileDialog,
-    uploadToS3,
-  } = useS3Upload()
-
-  const {
     contents,
     previousPageDisabled,
     goToPreviousPage,
     nextPageDisabled,
     goToNextPage,
   } = usePages()
-
-  async function handleFileChange(files: File[]) {
-    for(const file of files) {
-      await uploadToS3(file);
-    }
-  }
-
-  function downloadFile(url: string) {
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = '';
-  
-    link.click();
-  }
 
   return (
     <div className="bg-white">
@@ -187,20 +167,38 @@ function MainPage() {
             </a>
           </div>
         </nav>
-
-        <label
-          title="Ajoutez vos photos/videos"
-          className="cursor-pointer fixed z-90 bottom-14 right-2 bg-blue-600 py-2 px-1 text-lg rounded-full drop-shadow-lg justify-center items-center text-white hover:bg-blue-700 hover:drop-shadow-2xl"
-        >
-          <input
-            type="file"
-            multiple
-            className="hidden"
-            onChange={event => handleFileChange(Array.from(event.target.files!))}
-          />
-          Ajoutez vos photos/vidoes
-        </label>
+        
+        <UploadButton />
       </main>
     </div>
+  )
+}
+
+function UploadButton() {
+  const {
+    files: uploadingFiles,
+    openFileDialog,
+    uploadToS3,
+  } = useS3Upload()
+
+  async function handleFileChange(files: File[]) {
+    for(const file of files) {
+      await uploadToS3(file);
+    }
+  }
+
+  return (
+    <label
+      title="Ajoutez vos photos/videos"
+      className="cursor-pointer fixed z-90 bottom-14 right-2 bg-blue-600 py-2 px-1 text-lg rounded-full drop-shadow-lg justify-center items-center text-white hover:bg-blue-700 hover:drop-shadow-2xl"
+    >
+      <input
+        type="file"
+        multiple
+        className="hidden"
+        onChange={event => handleFileChange(Array.from(event.target.files!))}
+      />
+      Ajoutez vos photos/vidoes
+    </label>
   )
 }
