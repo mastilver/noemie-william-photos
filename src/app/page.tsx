@@ -1,6 +1,6 @@
 "use client"
 
-import { ArrowLongLeftIcon, ArrowLongRightIcon, ArrowDownIcon } from '@heroicons/react/20/solid'
+import { ArrowLongLeftIcon, ArrowLongRightIcon, ArrowTopRightOnSquareIcon } from '@heroicons/react/20/solid'
 import { useS3Upload } from "next-s3-upload";
 
 import usePages from './hooks/usePages';
@@ -154,11 +154,12 @@ function MainPage() {
                   <img src={content.url} className="w-full h-auto"/>
                   <span className="absolute bottom-0 right-0 bg-white text-black p-2 text-sm font-semibold rounded-tl-md">
                     <p className='inline-block'>par {content.author}</p>
-                    <ArrowDownIcon
-                      className="inline-block h-5 w-5 text-black cursor-pointer"
-                      title='Télécharger'
-                      onClick={() => downloadFile(content.url)}
-                    />
+                    <a download="test.jpg" href={content.url} target="_blank">
+                      <ArrowTopRightOnSquareIcon
+                        className="inline-block h-5 w-5 text-black cursor-pointer pl-1"
+                        title='Ouvrir'
+                      />
+                    </a>
                   </span>
                 </div>
               </div>
