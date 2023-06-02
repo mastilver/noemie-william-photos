@@ -22,6 +22,10 @@ const s3 = new S3({
 })
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse<Page>) {
+  if (req.cookies.password !== process.env.PASSWORD) {
+    return res.status(403)
+  }
+
   const continuationToken = req.query.nextContinuationToken
   if (typeof continuationToken !== 'string') {
     throw new Error('nextContinuationToken not a string')

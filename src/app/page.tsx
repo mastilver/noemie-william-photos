@@ -4,6 +4,7 @@ import { ArrowLongLeftIcon, ArrowLongRightIcon, ArrowDownIcon } from '@heroicons
 import { useS3Upload } from "next-s3-upload";
 
 import usePages from './hooks/usePages';
+import useAuth from './hooks/useAuth';
 
 export default function Home() {
   const {
@@ -20,6 +21,10 @@ export default function Home() {
     goToNextPage,
   } = usePages()
 
+  const {
+    isLoggedIn,
+  } = useAuth()
+
   async function handleFileChange(files: File[]) {
     for(const file of files) {
       await uploadToS3(file);
@@ -32,6 +37,11 @@ export default function Home() {
     link.download = '';
   
     link.click();
+  }
+
+  if (!isLoggedIn) {
+    // TODO: login screen
+    return null
   }
 
   return (
@@ -60,7 +70,7 @@ export default function Home() {
                 <div className="relative">
                   <img src={content.url} className="w-full h-auto"/>
                   <span className="absolute bottom-0 right-0 bg-white text-black p-2 text-sm font-semibold rounded-tl-md">
-                    <p className='inline-block'>par Thomas</p>
+                    <p className='inline-block'>par {content.author}</p>
                     <ArrowDownIcon
                       className="inline-block h-5 w-5 text-black cursor-pointer"
                       title='Télécharger'

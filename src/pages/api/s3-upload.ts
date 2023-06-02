@@ -7,8 +7,10 @@ export default APIRoute.configure({
     bucket: process.env.S3_BUCKET,
     region: process.env.S3_REGION,
     async key(req, filename) {
-        const userName = 'thomas'
+        if (req.cookies.password !== process.env.PASSWORD || !req.cookies.username) {
+            throw new Error('Not logged in')
+        }
 
-        return `${Number.MAX_SAFE_INTEGER - new Date().getTime()}/${userName}/${filename}`
+        return `${Number.MAX_SAFE_INTEGER - new Date().getTime()}/${req.cookies.username}/${filename}`
     }
 })
