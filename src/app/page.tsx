@@ -5,6 +5,7 @@ import { useS3Upload } from "next-s3-upload";
 
 import usePages from './hooks/usePages';
 import useAuth from './hooks/useAuth';
+import { useState } from 'react';
 
 export default function Home() {
   const {
@@ -30,22 +31,32 @@ function LogInPage({
 }: {
   login(username: string, password: string): any,
 }) {
+  const [username, setUsername] = useState('')
+  const [password, setPassword] = useState('')
+
+  function handleSubmit() {
+    login(username, password)
+    setUsername('')
+    setPassword('')
+  }
+
   return (
     <div className="flex min-h-screen flex-1 flex-col justify-center px-6 py-12 lg:px-8">
       <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
-        <form className="space-y-6" action="#" method="POST">
+        <form className="space-y-6" onSubmit={handleSubmit}>
           <div>
-            <label htmlFor="email" className="block text-base font-medium leading-3 text-gray-900">
+            <label htmlFor="username" className="block text-base font-medium leading-3 text-gray-900">
               Nom <span className="text-sm">(utilisé seulement pour poster une photo)</span>
             </label>
             <div className="mt-2">
               <input
-                id="email"
-                name="email"
-                type="email"
-                autoComplete="email"
+                id="username"
+                name="username"
+                autoComplete="username"
                 required
                 className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                value={username}
+                onChange={event => setUsername(event.target.value)}
               />
             </div>
           </div>
@@ -64,6 +75,8 @@ function LogInPage({
                 autoComplete="current-password"
                 required
                 className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                value={password}
+                onChange={event => setPassword(event.target.value)}
               />
             </div>
           </div>
