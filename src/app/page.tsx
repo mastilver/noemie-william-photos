@@ -2,6 +2,7 @@
 
 import { ArrowLongLeftIcon, ArrowLongRightIcon, ArrowTopRightOnSquareIcon } from '@heroicons/react/20/solid'
 import { useS3Upload } from "next-s3-upload";
+import humanFormat from 'human-format'
 
 import usePages from './hooks/usePages';
 import useAuth from './hooks/useAuth';
@@ -176,29 +177,47 @@ function MainPage() {
 
 function UploadButton() {
   const {
-    files: uploadingFiles,
-    openFileDialog,
+    files,
     uploadToS3,
+    resetFiles,
   } = useS3Upload()
 
+  const [numFiles, setNumFiles] = useState(0)
+  const [sizeFiles, setsizeFiles] = useState(0)
+  
+  const uploadedNumFiles = files.filter(x => x.progress === 100).length
+  const uploadedSizeFiles = files.map(x => x.uploaded).reduce((acc, x) => acc + x, 0)
+
+  const isUploading = numFiles !== 0 && numFiles !== uploadedNumFiles
+
+  console.log(`files: ${uploadedNumFiles}/${numFiles}`)
+  console.log(`size: ${humanFormat(uploadedSizeFiles)}/${humanFormat(sizeFiles)}`)
+
   async function handleFileChange(files: File[]) {
-    for(const file of files) {
-      await uploadToS3(file);
-    }
+    resetFiles()
+    setNumFiles(files.length)
+    setsizeFiles(files.map(x => x.size).reduce((acc, x) => acc + x, 0))
+
+    await Promise.all(files.map(file => uploadToS3(file)))
   }
 
   return (
     <label
-      title="Ajoutez vos photos/videos"
       className="cursor-pointer fixed z-90 bottom-14 right-2 bg-blue-600 py-2 px-1 text-lg rounded-full drop-shadow-lg justify-center items-center text-white hover:bg-blue-700 hover:drop-shadow-2xl"
     >
-      <input
-        type="file"
-        multiple
-        className="hidden"
-        onChange={event => handleFileChange(Array.from(event.target.files!))}
-      />
-      Ajoutez vos photos/vidoes
+      {isUploading ? (
+        <span>{uploadedNumFiles} fichiers sur {numFiles} ({humanFormat(uploadedSizeFiles)}/{humanFormat(sizeFiles)})</span>
+      ) : (
+        <>
+          <input
+            type="file"
+            multiple
+            className="hidden"
+            onChange={event => handleFileChange(Array.from(event.target.files!))}
+          />
+          Ajoutez vos photos/vidoes
+        </>
+      )}
     </label>
   )
 }
