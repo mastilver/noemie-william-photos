@@ -43,7 +43,10 @@ function LogInPage({
   return (
     <div className="flex min-h-screen flex-1 flex-col justify-center px-6 py-12 lg:px-8">
       <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
-        <form className="space-y-6" onSubmit={handleSubmit}>
+        <form className="space-y-6" onSubmit={event => {
+          event.preventDefault()
+          handleSubmit()
+        }}>
           <div>
             <label htmlFor="username" className="block text-base font-medium leading-3 text-gray-900">
               Nom <span className="text-sm">(utilisé seulement pour poster une photo)</span>
