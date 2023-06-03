@@ -133,8 +133,13 @@ function MainPage() {
             {contents.map((content) => (
               <div className="md:col-span-1" key={content.url}>
                 <div className="relative">
-                  <img src={content.url} className="w-full h-auto"/>
-                  <span className="absolute bottom-0 right-0 bg-white text-black p-2 text-sm font-semibold rounded-tl-md">
+                  {content.type === 'image' ? (
+                    <img src={content.url} className="w-full h-auto"/>
+                  ) : (
+                    <video src={content.url} controls className="w-full h-auto" />
+                  )}
+
+                  <span className="absolute top-0 right-0 bg-white text-black p-2 text-sm font-semibold rounded-bl-md">
                     <p className='inline-block'>par {content.author}</p>
                     <a download="test.jpg" href={content.url} target="_blank">
                       <ArrowTopRightOnSquareIcon

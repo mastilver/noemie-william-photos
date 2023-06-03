@@ -1,6 +1,7 @@
 import { GetObjectCommand, S3, S3Client } from '@aws-sdk/client-s3'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import { NextApiRequest, NextApiResponse } from 'next'
+import isVideo from 'is-video'
 
 type Content = {
   url: string,
@@ -50,7 +51,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
       return {
         url: url,
         author: getAuthor(c.Key!),
-        type: 'image',
+        type: getType(c.Key!),
       }
     })),
   }
@@ -62,4 +63,12 @@ function getAuthor(url: string): string {
   const [,author] = url.split('/')
 
   return author
+}
+
+function getType(url: string): 'image' | 'video' {
+  if (isVideo(url)) {
+    return 'video'
+  }
+
+  return 'image'
 }
