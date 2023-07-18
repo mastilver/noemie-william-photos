@@ -228,7 +228,7 @@ function UploadButton({
             className="hidden"
             onChange={event => handleFileChange(Array.from(event.target.files!))}
           />
-          Ajoutez vos photos/vidoes
+          Ajoutez vos photos/videos
         </>
       )}
     </label>
